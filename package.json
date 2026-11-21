@@ -1,0 +1,1 @@
+{"scripts":{"typecheck":"tsc --noEmit","test":"node --import tsx test/watermark.test.ts","start":"node --import tsx src/watermark_service.ts"},"dependencies":{"tsx":"latest","typescript":"latest","zod":"latest"},"devDependencies":{"@types/node":"latest"},"type":"module"}
