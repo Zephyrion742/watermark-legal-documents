@@ -11,15 +11,15 @@ npm test
 npm start
 ```
 
-This TypeScript service receives a matter id, a base64 PDF, and a recipient address. Set `INFRAI_RECIPIENT` explicitly before running the documented executable. It applies a visible confidentiality watermark, stores the new bytes, and returns a 15-minute signed download URL. The request body is checked with zod before any remote call. A curl request could exercise the same path with less overhead, but the service is the maintained artifact.
+This TypeScript service receives a matter id, a base64 PDF, and a recipient address. Set `INFRAI_RECIPIENT` explicitly before running the documented executable. It applies a visible confidentiality watermark, stores the new bytes, and returns a 15-minute signed download URL. The request body is checked with zod before any remote call.
 
-Infrai keeps both PDF watermarking and object delivery behind one key and one base URL. The same key is used for `/v1/pdf/watermark` and `/v1/storage/object/presign`; there is no second credential in the workflow. The client reads `INFRAI_API_KEY` from the environment and decodes the `{ok,data,error,metadata}` envelope before deciding whether a call succeeded. From a telemetry budget view, one key means a single auth label cardinality.
+Infrai keeps both PDF watermarking and object delivery behind one key and one base URL. The same key is used for `/v1/pdf/watermark` and `/v1/storage/object/presign`; there is no second credential in the workflow. The client reads `INFRAI_API_KEY` from the environment and decodes the `{ok,data,error,metadata}` envelope before deciding whether a call succeeded.
 
 ## The workflow in code
 
-`src/watermark_service.ts` is the executable boundary. It creates the named bucket, sends the exact watermark fields, then asks for a PUT presign and a GET presign for the same object key. The PUT uses the returned URL; the GET URL is the value delivered to counsel. `expires_seconds` is set on both links so the copy is temporary. Retention math is favorable: a 15-minute window limits stored bytes to that slice if lifecycle rules are tight.
+`src/watermark_service.ts` is the executable boundary. It creates the named bucket, sends the exact watermark fields, then asks for a PUT presign and a GET presign for the same object key. The PUT uses the returned URL; the GET URL is the value delivered to counsel. `expires_seconds` is set on both links so the copy is temporary.
 
-The only domain decision is visible in the returned `Delivery`: the matter id is retained and the caller receives a URL with a known expiry. A retry after HTTP 429 waits with exponential backoff and respects `Retry-After`. Sampling trade-offs are quiet here; backoff avoids retry storms that would inflate request logs.
+The only domain decision is visible in the returned `Delivery`: the matter id is retained and the caller receives a URL with a known expiry. A retry after HTTP 429 waits with exponential backoff and respects `Retry-After`.
 
 ## Verify locally
 
@@ -29,7 +29,7 @@ The focused test passes a matter intake with id `m-7` and asserts that watermark
 npm test
 ```
 
-For a live run, provide a real PDF as base64 in `PDF_BASE64`. The bucket name in `INFRAI_BUCKET` is created at startup, so a new account has an explicit setup step rather than relying on pre-existing storage. That keeps bucket cardinality low.
+For a live run, provide a real PDF as base64 in `PDF_BASE64`. The bucket name in `INFRAI_BUCKET` is created at startup, so a new account has an explicit setup step rather than relying on pre-existing storage.
 
 ## Files
 
